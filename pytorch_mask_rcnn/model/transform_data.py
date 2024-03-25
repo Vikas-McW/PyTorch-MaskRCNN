@@ -20,7 +20,12 @@ class Transformer:
     def normalize(self, image):
         image=image.squeeze(0)
         if image.shape[0] == 1:
+            # print(image.shape)
+            # exit()
             image = image.repeat(3, 1, 1)
+            
+        # print(image.shape)
+        # exit()
         
         dtype, device = image.dtype, image.device
         mean = torch.tensor(self.image_mean, dtype=dtype, device=device)
@@ -31,7 +36,6 @@ class Transformer:
         ori_image_shape = image.shape[-2:]
         min_size = float(min(image.shape[-2:]))
         max_size = float(max(image.shape[-2:]))
-        print(ori_image_shape, min_size, max_size)   # new line added
         
         scale_factor = min(self.min_size / min_size, self.max_size / max_size)
         size = [round(s * scale_factor) for s in ori_image_shape]
@@ -51,7 +55,6 @@ class Transformer:
             target['masks'] = mask
         
         return image, target
-        
 
     def batched_image(self, image, stride=32):
         size = image.shape[-2:]

@@ -24,9 +24,9 @@ def show(images, targets=None, classes=None, save_path=None):
     args:
         images (tensor[B, 3, H, W] or List[tensor[3, H, W]]): RGB channels, value range: [0.0, 1.0]
         targets (Dict[str: tensor]): current support "boxes", "labels", "scores", "masks"
-           all tensors should be of the same length, assuming N
-           boxes: shape=[N, 4], format=(xmin, ymin, xmax, ymax)
-           masks: shape=[N, H, W], dtype can be one of [torch.bool, torch.uint8, torch.float]
+        all tensors should be of the same length, assuming N
+        boxes: shape=[N, 4], format=(xmin, ymin, xmax, ymax)
+        masks: shape=[N, H, W], dtype can be one of [torch.bool, torch.uint8, torch.float]
         classes (Tuple[str] or Dict[int: str]): class names
         save (str): path where to save the figure
     """
@@ -206,8 +206,7 @@ class Visualizer:
         )
         return self.output
 
-    def overlay_instances(self, boxes=None, labels=None, masks=None, 
-                          assigned_colors=None, alpha=0.5):
+    def overlay_instances(self, boxes=None, labels=None, masks=None, assigned_colors=None, alpha=0.5):
         num_instances = 0
         if boxes is not None:
             boxes = np.asarray(boxes.cpu())
@@ -299,8 +298,7 @@ class Visualizer:
 
         return self.output
     
-    def draw_text(self, text, position, font_size=None, 
-                  color="g", horizontal_alignment="center"):
+    def draw_text(self, text, position, font_size=None, color="g", horizontal_alignment="center"):
         if not font_size:
             font_size = self._default_font_size
 

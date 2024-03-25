@@ -23,8 +23,7 @@ class MaskRCNN(nn.Module):
 
     During training, the model expects both the input tensor, as well as a target (dictionary),
     containing:
-        - boxes (FloatTensor[N, 4]): the ground-truth boxes in [xmin, ymin, xmax, ymax] format, with values
-          between 0-H and 0-W
+        - boxes (FloatTensor[N, 4]): the ground-truth boxes in [xmin, ymin, xmax, ymax] format, with values between 0-H and 0-W
         - labels (Int64Tensor[N]): the class label for each ground-truth box
         - masks (UInt8Tensor[N, H, W]): the segmentation binary masks for each instance
 
@@ -34,13 +33,11 @@ class MaskRCNN(nn.Module):
     During inference, the model requires only the input tensor, and returns the post-processed
     predictions as a Dict[Tensor]. The fields of the Dict are as
     follows:
-        - boxes (FloatTensor[N, 4]): the predicted boxes in [xmin, ymin, xmax, ymax] format, 
-          with values between 0-H and 0-W
+        - boxes (FloatTensor[N, 4]): the predicted boxes in [xmin, ymin, xmax, ymax] format, with values between 0-H and 0-W
         - labels (Int64Tensor[N]): the predicted labels
         - scores (FloatTensor[N]): the scores for each prediction
-        - masks (FloatTensor[N, H, W]): the predicted masks for each instance, in 0-1 range. In order to
-          obtain the final segmentation masks, the soft masks can be thresholded, generally
-          with a value of 0.5 (mask >= 0.5)
+        - masks (FloatTensor[N, H, W]): the predicted masks for each instance, in 0-1 range. In order to obtain the 
+        final segmentation masks, the soft masks can be thresholded, generally with a value of 0.5 (mask >= 0.5)
         
     Arguments:
         backbone (nn.Module): the network used to compute the features for the model.
@@ -79,18 +76,18 @@ class MaskRCNN(nn.Module):
     """
     
     def __init__(self, backbone, num_classes,
-                 # RPN parameters
-                 rpn_fg_iou_thresh=0.7, rpn_bg_iou_thresh=0.3,
-                 rpn_num_samples=256, rpn_positive_fraction=0.5,
-                 rpn_reg_weights=(1., 1., 1., 1.),
-                 rpn_pre_nms_top_n_train=2000, rpn_pre_nms_top_n_test=1000,
-                 rpn_post_nms_top_n_train=2000, rpn_post_nms_top_n_test=1000,
-                 rpn_nms_thresh=0.7,
-                 # RoIHeads parameters
-                 box_fg_iou_thresh=0.5, box_bg_iou_thresh=0.5,
-                 box_num_samples=512, box_positive_fraction=0.25,
-                 box_reg_weights=(10., 10., 5., 5.),
-                 box_score_thresh=0.1, box_nms_thresh=0.6, box_num_detections=100):
+                # RPN parameters
+                rpn_fg_iou_thresh=0.7, rpn_bg_iou_thresh=0.3,
+                rpn_num_samples=256, rpn_positive_fraction=0.5,
+                rpn_reg_weights=(1., 1., 1., 1.),
+                rpn_pre_nms_top_n_train=2000, rpn_pre_nms_top_n_test=1000,
+                rpn_post_nms_top_n_train=2000, rpn_post_nms_top_n_test=1000,
+                rpn_nms_thresh=0.7,
+                # RoIHeads parameters
+                box_fg_iou_thresh=0.5, box_bg_iou_thresh=0.5,
+                box_num_samples=512, box_positive_fraction=0.25,
+                box_reg_weights=(10., 10., 5., 5.),
+                box_score_thresh=0.1, box_nms_thresh=0.6, box_num_detections=100):
         super().__init__()
         self.backbone = backbone
         out_channels = backbone.out_channels
@@ -105,11 +102,11 @@ class MaskRCNN(nn.Module):
         rpn_pre_nms_top_n = dict(training=rpn_pre_nms_top_n_train, testing=rpn_pre_nms_top_n_test)
         rpn_post_nms_top_n = dict(training=rpn_post_nms_top_n_train, testing=rpn_post_nms_top_n_test)
         self.rpn = RegionProposalNetwork(
-             rpn_anchor_generator, rpn_head, 
-             rpn_fg_iou_thresh, rpn_bg_iou_thresh,
-             rpn_num_samples, rpn_positive_fraction,
-             rpn_reg_weights,
-             rpn_pre_nms_top_n, rpn_post_nms_top_n, rpn_nms_thresh)
+            rpn_anchor_generator, rpn_head, 
+            rpn_fg_iou_thresh, rpn_bg_iou_thresh,
+            rpn_num_samples, rpn_positive_fraction,
+            rpn_reg_weights,
+            rpn_pre_nms_top_n, rpn_post_nms_top_n, rpn_nms_thresh)
         
         #------------ RoIHeads --------------------------
         box_roi_pool = RoIAlign(output_size=(7, 7), sampling_ratio=2)
@@ -120,11 +117,11 @@ class MaskRCNN(nn.Module):
         box_predictor = FastRCNNPredictor(in_channels, mid_channels, num_classes)
         
         self.head = RoIHeads(
-             box_roi_pool, box_predictor,
-             box_fg_iou_thresh, box_bg_iou_thresh,
-             box_num_samples, box_positive_fraction,
-             box_reg_weights,
-             box_score_thresh, box_nms_thresh, box_num_detections)
+            box_roi_pool, box_predictor,
+            box_fg_iou_thresh, box_bg_iou_thresh,
+            box_num_samples, box_positive_fraction,
+            box_reg_weights,
+            box_score_thresh, box_nms_thresh, box_num_detections)
         
         self.head.mask_roi_pool = RoIAlign(output_size=(14, 14), sampling_ratio=2)
         
@@ -132,7 +129,7 @@ class MaskRCNN(nn.Module):
         dim_reduced = 256
         self.head.mask_predictor = MaskRCNNPredictor(out_channels, layers, dim_reduced, num_classes)
         
-        #------------ Transformer --------------------------
+        #-------------------------------- Transformer -------------------------------------
         self.transformer = Transformer(
             min_size=800, max_size=1333, 
             image_mean=[0.485, 0.456, 0.406], 
@@ -142,6 +139,8 @@ class MaskRCNN(nn.Module):
         ori_image_shape = image.shape[-2:]
         
         image, target = self.transformer(image, target)
+        # print(image.shape)
+        
         image_shape = image.shape[-2:]
         feature = self.backbone(image)
         
@@ -154,7 +153,7 @@ class MaskRCNN(nn.Module):
             result = self.transformer.postprocess(result, image_shape, ori_image_shape)
             return result
         
-        
+
 class FastRCNNPredictor(nn.Module):
     def __init__(self, in_channels, mid_channels, num_classes):
         super().__init__()

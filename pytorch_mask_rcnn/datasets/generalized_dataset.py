@@ -53,7 +53,7 @@ class GeneralizedDataset:
         with open(checked_id_file, "w") as f:
             for img_id, aspect_ratio in outs:
                 f.write("{}, {:.4f}\n".format(img_id, aspect_ratio))
-         
+        
         info = [line.strip().split(", ") for line in open(checked_id_file)]
         self.ids, self.aspect_ratios = zip(*info)
         print("checked id file: {}".format(checked_id_file))

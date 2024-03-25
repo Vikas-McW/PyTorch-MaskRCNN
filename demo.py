@@ -4,36 +4,32 @@ import pytorch_mask_rcnn as pmr
 
 use_cuda = True
 dataset = "coco"
-# ckpt_path = "../ckpts/maskrcnn_voc-5.pth"
-data_dir = "dataset\COCO\coco2017\val2017"
+ckpt_path = "weight\\resnet50-0676ba61.pth"
+data_dir = "dataset/COCO/coco2017/"
 
 device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu")
 if device.type == "cuda":
     pmr.get_gpu_prop(show=True)
 print("\ndevice: {}".format(device))
 
-ds = pmr.datasets(dataset, data_dir, "val2017", train=True)
+ds = pmr.datasets(dataset, data_dir, "val2017", train=False)
 #indices = torch.randperm(len(ds)).tolist()
 #d = torch.utils.data.Subset(ds, indices)
-data_loader = torch.utils.data.DataLoader(ds, shuffle=False)
+# data_loader = torch.utils.data.DataLoader(ds, shuffle=False)
 
-model = pmr.maskrcnn_resnet50(True, max(ds.classes) + 1).to(device)
+from torchvision.models.detection.mask_rcnn import maskrcnn_resnet50_fpn
+import torchvision
+from torchvision.models.detection import MaskRCNN_ResNet50_FPN_Weights
+# load model
+model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights=MaskRCNN_ResNet50_FPN_Weights.DEFAULT)
 model.eval()
-model.head.score_thresh = 0.3
 
-"""
-if ckpt_path:
-    checkpoint = torch.load(ckpt_path, map_location=device)
-    model.load_state_dict(checkpoint["model"])
-    print(checkpoint["eval_info"])
-    del checkpoint
-"""
 for p in model.parameters():
     p.requires_grad_(False)
     
 iters = 5
 
-for i, (image, target) in enumerate(data_loader):
+for i, (image, target) in enumerate(ds):
     image = image.to(device)[0]
     #target = {k: v.to(device) for k, v in target.items()}
     
@@ -44,4 +40,13 @@ for i, (image, target) in enumerate(data_loader):
 
     if i >= iters - 1:
         break
+
+
+
+
+
+
+
+
+
 
