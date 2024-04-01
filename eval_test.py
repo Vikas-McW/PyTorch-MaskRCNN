@@ -10,7 +10,8 @@ import sys
 use_cuda = True
 dataset = "coco"
 
-data_dir = "dataset/COCO/coco2017/"
+# data_dir = "dataset/COCO/coco2017/"
+data_dir = "/kaggle/input/coco-2017-dataset/coco2017/"
 
 ###################################### < COCO EVALUATOR > ######################################
 
