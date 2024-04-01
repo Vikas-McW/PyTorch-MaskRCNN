@@ -135,24 +135,19 @@ class MaskRCNN(nn.Module):
             image_mean=[0.485, 0.456, 0.406], 
             image_std=[0.229, 0.224, 0.225])
         
-    def forward(self, image, target=None):
+    def forward(self, image):
         ori_image_shape = image.shape[-2:]
-        
-        image, target = self.transformer(image, target)
-        # print(image.shape)
+        # image, target = self.transformer(image, target)
         
         image_shape = image.shape[-2:]
         feature = self.backbone(image)
         
-        proposal, rpn_losses = self.rpn(feature, image_shape, target)
-        result, roi_losses = self.head(feature, proposal, image_shape, target)
+        proposal, rpn_losses = self.rpn(feature, image_shape)
+        result, roi_losses = self.head(feature, proposal, image_shape)
         
-        if self.training:
-            return dict(**rpn_losses, **roi_losses)
-        else:
-            result = self.transformer.postprocess(result, image_shape, ori_image_shape)
-            return result
-        
+        result = self.transformer.postprocess(result, image_shape, ori_image_shape)
+        print(result)
+        return result
 
 class FastRCNNPredictor(nn.Module):
     def __init__(self, in_channels, mid_channels, num_classes):
@@ -185,10 +180,10 @@ class MaskRCNNPredictor(nn.Sequential):
         d = OrderedDict()
         next_feature = in_channels
         for layer_idx, layer_features in enumerate(layers, 1):
-            d['mask_fcn{}'.format(layer_idx)] = nn.Conv2d(next_feature, layer_features, 3, 1, 1)
-            d['relu{}'.format(layer_idx)] = nn.ReLU(inplace=True)
+            d[f'mask_fcn{layer_idx}'] = nn.Conv2d(next_feature, layer_features, 3, 1, 1)
+            d[f'relu{layer_idx}'] = nn.ReLU(inplace=True)
             next_feature = layer_features
-        
+
         d['mask_conv5'] = nn.ConvTranspose2d(next_feature, dim_reduced, 2, 2, 0)
         d['relu5'] = nn.ReLU(inplace=True)
         d['mask_fcn_logits'] = nn.Conv2d(dim_reduced, num_classes, 1, 1, 0)
@@ -268,3 +263,4 @@ def maskrcnn_resnet50(pretrained, num_classes, pretrained_backbone=True):
         model.load_state_dict(msd)
     
     return model
+

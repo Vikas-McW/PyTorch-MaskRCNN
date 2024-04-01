@@ -26,10 +26,10 @@ class RPNHead(nn.Module):
 
 class RegionProposalNetwork(nn.Module):
     def __init__(self, anchor_generator, head, 
-                 fg_iou_thresh, bg_iou_thresh,
-                 num_samples, positive_fraction,
-                 reg_weights,
-                 pre_nms_top_n, post_nms_top_n, nms_thresh):
+                fg_iou_thresh, bg_iou_thresh,
+                num_samples, positive_fraction,
+                reg_weights,
+                pre_nms_top_n, post_nms_top_n, nms_thresh):
         super().__init__()
         
         self.anchor_generator = anchor_generator
@@ -43,15 +43,11 @@ class RegionProposalNetwork(nn.Module):
         self._post_nms_top_n = post_nms_top_n
         self.nms_thresh = nms_thresh
         self.min_size = 1
-                
+    
+    
     def create_proposal(self, anchor, objectness, pred_bbox_delta, image_shape):
-        if self.training:
-            pre_nms_top_n = self._pre_nms_top_n['training']
-            post_nms_top_n = self._post_nms_top_n['training']
-        else:
-            pre_nms_top_n = self._pre_nms_top_n['testing']
-            post_nms_top_n = self._post_nms_top_n['testing']
-            
+        pre_nms_top_n = self._pre_nms_top_n['testing']
+        post_nms_top_n = self._post_nms_top_n['testing']
         pre_nms_top_n = min(objectness.shape[0], pre_nms_top_n)
         top_n_idx = objectness.topk(pre_nms_top_n)[1]
         score = objectness[top_n_idx]
@@ -75,9 +71,7 @@ class RegionProposalNetwork(nn.Module):
 
         return objectness_loss, box_loss
         
-    def forward(self, feature, image_shape, target=None):
-        if target is not None:
-            gt_box = target['boxes']
+    def forward(self, feature, image_shape):
         anchor = self.anchor_generator(feature, image_shape)
         
         objectness, pred_bbox_delta = self.head(feature)
@@ -85,8 +79,6 @@ class RegionProposalNetwork(nn.Module):
         pred_bbox_delta = pred_bbox_delta.permute(0, 2, 3, 1).reshape(-1, 4)
 
         proposal = self.create_proposal(anchor, objectness.detach(), pred_bbox_delta.detach(), image_shape)
-        if self.training:
-            objectness_loss, box_loss = self.compute_loss(objectness, pred_bbox_delta, gt_box, anchor)
-            return proposal, dict(rpn_objectness_loss=objectness_loss, rpn_box_loss=box_loss)
-        
         return proposal, {}
+    
+    

@@ -6,6 +6,11 @@ import time
 import re
 import sys
 
+# Import ONNX dependencies
+import onnx # Import the onnx module
+from onnxsim import simplify # Import the method to simplify ONNX models
+import onnxruntime as ort # Import the ONNX Runtime
+
 
 use_cuda = True
 dataset = "coco"
@@ -171,30 +176,21 @@ model.eval()
 A = time.time()
 
 # ==============================================================================================
+# Onnx Export 
+dummy_input_tensor = torch.randn(1, 3, 800, 1200)
 
-for i, (image, target) in enumerate(d): 
-    T = time.time()
-    
-    image = image.to(device)
-    target = {k: v.to(device) for k, v in target.items()}
-    
-    # print(image.shape)
+torch.onnx.export(model.cpu(), 
+                dummy_input_tensor.cpu(),
+                "weight/mask_rcnn_fp32.onnx",
+                verbose=True,
+                opset_version=11)
 
-    S = time.time()
-    # torch.cuda.synchronize()
-    
-    output = model(image)
-    m_m.update(time.time() - S)
+onnx_model = onnx.load("weight/mask_rcnn_fp32.onnx")
+model_simp, check = simplify(onnx_model)
+onnx.save(model_simp, "weight/mask_rcnn_simple_fp32.onnx")
 
-    prediction = {target["image_id"].item(): {k: v.cpu() for k, v in output.items()}}
-    coco_results.extend(prepare_for_coco(prediction))
+print("Onnx FP32 Conversion Done...!")
 
-    t_m.update(time.time() - T)
-
-    # --------------- added script -----------------
-    if (i >= 10):
-        break
-    # ----------------------------------------------
 
 # ==============================================================================================
 
@@ -209,7 +205,7 @@ coco_evaluator = CocoEvaluator(dataset.coco, iou_types)
 
 S = time.time()
 coco_evaluator.accumulate(coco_results)
-print("Accumulate: {:.1f}s".format(time.time() - S))
+# print("Accumulate: {:.1f}s".format(time.time() - S))
 
 # collect outputs of build in function print
 temp = sys.stdout
@@ -219,6 +215,6 @@ coco_evaluator.summarize()
 output = sys.stdout
 sys.stdout = temp
 
-print(output.get_AP())
+# print(output.get_AP())
 
 

@@ -1,10 +1,14 @@
 
 import torch
+import onnxruntime
 import pytorch_mask_rcnn as pmr
 import time
 # from .datasets import CocoEvaluator, prepare_for_coco
 import re
 import sys
+
+import onnxruntime as ort # Import the ONNX Runtime
+import torch.nn.functional as F
 
 
 use_cuda = True
@@ -17,6 +21,7 @@ data_dir = "dataset/COCO/coco2017/"
 import copy
 import torch
 import numpy as np
+import torch.onnx
 
 import pycocotools.mask as mask_util
 from pycocotools.cocoeval import COCOeval
@@ -151,22 +156,19 @@ class Meter:
         return fmtstr.format(**self.__dict__)
     
 
+# Load the dataset
 ds = pmr.datasets(dataset, data_dir, "val2017", train=True)
-
 d = torch.utils.data.DataLoader(ds, shuffle=False)
 
-model = pmr.maskrcnn_resnet50(True, max(ds.classes) + 1).to(device)
-model.eval()
-model.head.score_thresh = 0.3
+# model = pmr.maskrcnn_resnet50(True, max(ds.classes) + 1).to(device)
+# model = torch.onnx.load("weight/mask_rcnn_fp32.onnx")
 
-for p in model.parameters():
-    p.requires_grad_(False)
-
+# Load the model and create an InferenceSession
+model = ort.InferenceSession("weight/mask_rcnn_simple_fp32.onnx", providers=['CPUExecutionProvider'])
 
 t_m = Meter("total")
 m_m = Meter("model")
 coco_results = []
-model.eval()
 
 A = time.time()
 
@@ -176,14 +178,15 @@ for i, (image, target) in enumerate(d):
     T = time.time()
     
     image = image.to(device)
-    target = {k: v.to(device) for k, v in target.items()}
+    size = [800, 1200]
+    image = F.interpolate(image[-2:], size=size, mode='bilinear', align_corners=False)[0]
     
-    # print(image.shape)
+    target = {k: v.to(device) for k, v in target.items()}
 
     S = time.time()
     # torch.cuda.synchronize()
-    
-    output = model(image)
+    output = model.run(None, {'image.1': image.cpu().numpy()})
+    print(output)   
     m_m.update(time.time() - S)
 
     prediction = {target["image_id"].item(): {k: v.cpu() for k, v in output.items()}}
