@@ -1,0 +1,13 @@
+# modules
+torch
+onnx
+maskrcnn
+torchvision
+pycocotools
+opencv-python
+matplotlib
+onnxruntime
+onnxsim
+timm
+utils
+
