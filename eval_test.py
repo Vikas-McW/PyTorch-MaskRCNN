@@ -10,8 +10,7 @@ import sys
 use_cuda = True
 dataset = "coco"
 
-# data_dir = "dataset/COCO/coco2017/"
-data_dir = "/kaggle/input/coco-2017-dataset/coco2017/"
+data_dir = "dataset/COCO/coco2017/"
 
 ###################################### < COCO EVALUATOR > ######################################
 
@@ -178,13 +177,15 @@ for i, (image, target) in enumerate(d):
     
     image = image.to(device)
     target = {k: v.to(device) for k, v in target.items()}
-    
-    # print(image.shape)
 
     S = time.time()
     # torch.cuda.synchronize()
     
+    image = image.squeeze(0)
+    print(image.shape)
     output = model(image)
+    # print(output)
+    
     m_m.update(time.time() - S)
 
     prediction = {target["image_id"].item(): {k: v.cpu() for k, v in output.items()}}
@@ -197,7 +198,7 @@ for i, (image, target) in enumerate(d):
         break
     # ----------------------------------------------
 
-# ==============================================================================================
+# ================================================================================================
 
 A = time.time() - A 
 
@@ -221,5 +222,7 @@ output = sys.stdout
 sys.stdout = temp
 
 print(output.get_AP())
+
+
 
 

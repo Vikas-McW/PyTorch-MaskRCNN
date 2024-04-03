@@ -1,13 +1,13 @@
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import torch
-import torchvision.transforms.functional as tf
+import torch  # type: ignore
+import torchvision.transforms.functional as tf  # type: ignore
 
 # #################################################################################################
 import math
-import torch.nn.functional as F
-from torchvision import transforms
+import torch.nn.functional as F  # type: ignore
+from torchvision import transforms  # type: ignore
 
 class Transformer:
     def __init__(self, min_size, max_size, image_mean, image_std):

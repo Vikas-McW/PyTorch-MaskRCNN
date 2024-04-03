@@ -1,6 +1,6 @@
-import torch
-import torch.nn.functional as F
-from torch import nn
+import torch # type: ignore
+import torch.nn.functional as F # type: ignore
+from torch import nn # type: ignore
 
 from .box_ops import BoxCoder, box_iou, process_box, nms
 from .utils import Matcher, BalancedPositiveNegativeSampler

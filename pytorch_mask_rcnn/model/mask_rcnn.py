@@ -238,34 +238,40 @@ def maskrcnn_resnet50(pretrained, num_classes, pretrained_backbone=True):
     
     if pretrained:
         backbone_pretrained = False
-        
+
     backbone = ResBackbone('resnet50', pretrained_backbone)
     model = MaskRCNN(backbone, num_classes)
-    
-    if pretrained:
-        model_urls = {
-            'maskrcnn_resnet50_fpn_coco':
-                'https://download.pytorch.org/models/maskrcnn_resnet50_fpn_coco-bf2d0c1e.pth',
-        }
-        model_state_dict = load_url(model_urls['maskrcnn_resnet50_fpn_coco'])
-        
-        pretrained_msd = list(model_state_dict.values())
-        del_list = [i for i in range(265, 271)] + [i for i in range(273, 279)]
-        for i, del_idx in enumerate(del_list):
-            pretrained_msd.pop(del_idx - i)
 
-        msd = model.state_dict()
-        skip_list = [271, 272, 273, 274, 279, 280, 281, 282, 293, 294]
-        if num_classes == 91:
-            skip_list = [271, 272, 273, 274]
-        for i, name in enumerate(msd):
-            if i in skip_list:
-                continue
-            msd[name].copy_(pretrained_msd[i])
-            
-        model.load_state_dict(msd)
-    
+    if pretrained:
+        _extracted_from_maskrcnn_resnet50_(model, num_classes)
     return model
+
+
+# TODO Rename this here and in `maskrcnn_resnet50`
+def _extracted_from_maskrcnn_resnet50_(model, num_classes):
+    model_urls = {
+        'maskrcnn_resnet50_fpn_coco':
+            'https://download.pytorch.org/models/maskrcnn_resnet50_fpn_coco-bf2d0c1e.pth',
+    }
+    model_state_dict = load_url(model_urls['maskrcnn_resnet50_fpn_coco'])
+
+    pretrained_msd = list(model_state_dict.values())
+    del_list = list(range(265, 271)) + list(range(273, 279))
+    for i, del_idx in enumerate(del_list):
+        pretrained_msd.pop(del_idx - i)
+
+    msd = model.state_dict()
+    skip_list = (
+        [271, 272, 273, 274]
+        if num_classes == 91
+        else [271, 272, 273, 274, 279, 280, 281, 282, 293, 294]
+    )
+    for i, name in enumerate(msd):
+        if i in skip_list:
+            continue
+        msd[name].copy_(pretrained_msd[i])
+
+    model.load_state_dict(msd)
 
 
 

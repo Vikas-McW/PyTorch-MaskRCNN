@@ -1,7 +1,7 @@
 
-import torch
-import pytorch_mask_rcnn as pmr
-# torch.set_printoptions(threshold=1000000000)
+import torch  # type: ignore
+import pytorch_mask_rcnn as pmr  # type: ignore
+# torch.set_printoptions(threshold=1000000000)  
 
 
 use_cuda = True
@@ -17,6 +17,7 @@ print(f"\ndevice: {device}")
 ds = pmr.datasets(dataset, data_dir, "val2017", train=True)
 #indices = torch.randperm(len(ds)).tolist()
 #d = torch.utils.data.Subset(ds, indices)
+
 d = torch.utils.data.DataLoader(ds, shuffle=False)
 
 model = pmr.maskrcnn_resnet50(True, max(ds.classes) + 1).to(device)
@@ -27,7 +28,7 @@ for p in model.parameters():
     p.requires_grad_(False)
 
 
-image,target = next(iter(d))
+image, target = next(iter(d))
 
 image = image.to(device)[0]
 # print(target)
@@ -38,7 +39,7 @@ result = model(image)
 print(result.keys())
 print(result)
 
-# pmr.show(image, result, ds.classes, f"./image/output{i}.jpg")
+# pmr.show(image, result, ds.classes, "./image/output001.jpg")
 
 
 

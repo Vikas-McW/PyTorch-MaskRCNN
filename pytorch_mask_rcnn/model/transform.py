@@ -1,7 +1,7 @@
 import math
 
-import torch
-import torch.nn.functional as F
+import torch # type: ignore
+import torch.nn.functional as F # type: ignore
 
 
 class Transformer:

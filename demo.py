@@ -19,21 +19,25 @@ print(f"\ndevice: {device}")
 ds = pmr.datasets(dataset, data_dir, "val2017", train=False)
 #indices = torch.randperm(len(ds)).tolist()
 #d = torch.utils.data.Subset(ds, indices)
-# data_loader = torch.utils.data.DataLoader(ds, shuffle=False)
+data_loader = torch.utils.data.DataLoader(ds, shuffle=False)
 
 # load model
-model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights=MaskRCNN_ResNet50_FPN_Weights.DEFAULT)
+# model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights=MaskRCNN_ResNet50_FPN_Weights.DEFAULT)
+model = pmr.maskrcnn_resnet50(True, max(ds.classes) + 1).to(device)
 model.eval()
+model.head.score_thresh = 0.3
 
 for p in model.parameters():
     p.requires_grad_(False)
 
-iters = 5
+iters = 1
 
-for i, (image, target) in enumerate(ds):
+for i, (image, target) in enumerate(data_loader):
     image = image.to(device)[0]
-    #target = {k: v.to(device) for k, v in target.items()}
-
+    target = {k: v.to(device) for k, v in target.items()}
+    
+    image = image.squeeze(0)
+    
     with torch.no_grad():
         result = model(image)
 

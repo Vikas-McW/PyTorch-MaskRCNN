@@ -1,6 +1,6 @@
-import torch
-import torch.nn.functional as F
-from torch import nn
+import torch  # type: ignore
+import torch.nn.functional as F  # type: ignore
+from torch import nn  # type: ignore
 
 from .pooler import RoIAlign
 from .utils import Matcher, BalancedPositiveNegativeSampler, roi_align
