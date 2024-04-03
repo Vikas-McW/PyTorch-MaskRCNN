@@ -178,24 +178,23 @@ for i, (image, target) in enumerate(d):
     T = time.time()
     
     image = image.to(device)
-    size = [800, 1200]
-    image = F.interpolate(image[-2:], size=size, mode='bilinear', align_corners=False)[0]
+    image = image.squeeze(0)
     
     target = {k: v.to(device) for k, v in target.items()}
 
     S = time.time()
     # torch.cuda.synchronize()
-    output = model.run(None, {'image.1': image.cpu().numpy()})
-    print(output)   
+    output = model.run(None, {'input.1': image.cpu().numpy()})
+    
     m_m.update(time.time() - S)
 
-    prediction = {target["image_id"].item(): {k: v.cpu() for k, v in output.items()}}
+    prediction = {target["image_id"].item(): {k: v.cpu() for k, v in output.items()}} 
     coco_results.extend(prepare_for_coco(prediction))
 
     t_m.update(time.time() - T)
 
     # --------------- added script -----------------
-    if (i >= 10):
+    if (i >= 10) :
         break
     # ----------------------------------------------
 

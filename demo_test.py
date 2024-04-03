@@ -2,6 +2,8 @@
 import torch
 import pytorch_mask_rcnn as pmr
 # torch.set_printoptions(threshold=1000000000)
+
+
 use_cuda = True
 dataset = "coco"
 # ckpt_path = "../ckpts/maskrcnn_voc-5.pth"
@@ -25,9 +27,8 @@ for p in model.parameters():
     p.requires_grad_(False)
 
 
-
 image,target = next(iter(d))
-# for i, (image, target) in enumerate(d):
+
 image = image.to(device)[0]
 # print(target)
 #target = {k: v.to(device) for k, v in target.items()}
@@ -35,7 +36,7 @@ image = image.to(device)[0]
 # with torch.no_grad():
 result = model(image)
 print(result.keys())
-# print(result)
+print(result)
 
 # pmr.show(image, result, ds.classes, f"./image/output{i}.jpg")
 

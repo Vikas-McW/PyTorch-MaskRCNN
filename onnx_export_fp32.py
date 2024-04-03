@@ -177,7 +177,7 @@ A = time.time()
 
 # ==============================================================================================
 # Onnx Export 
-dummy_input_tensor = torch.randn(1, 3, 800, 1200)
+dummy_input_tensor = torch.randn(1, 3, 800, 1216)
 
 torch.onnx.export(model.cpu(), 
                 dummy_input_tensor.cpu(),
@@ -197,7 +197,7 @@ print("Onnx FP32 Conversion Done...!")
 A = time.time() - A 
 
 # return A / iters, coco_results
-dataset = ds #
+dataset = ds 
 iou_types = ["bbox", "segm"]
 coco_evaluator = CocoEvaluator(dataset.coco, iou_types)
 

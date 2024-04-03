@@ -1,12 +1,19 @@
 
 import torch
 import utils
+import pytorch_mask_rcnn as pmr
 
 """### **Method=MinMax**"""
 
 # Quantization Class ---------------------------------------------------------------------
 import onnxruntime as ort
-import timm
+# import timm
+
+
+use_cuda = True
+dataset = "coco"
+ckpt_path = "weight/mask_rcnn_pytorch.pth"
+data_dir = "dataset/COCO/coco2017/"
 
 class OnnxStaticQuantization:
     def __init__(self) -> None:
@@ -32,7 +39,7 @@ class OnnxStaticQuantization:
             self.enum_data = iter(calib_list)
         return next(self.enum_data, None)
 
-    def quantization(self, fp32_onnx_path, future_int8_onnx_path, calib_method, calibration_loader, sample=100):
+    def quantization1(self, fp32_onnx_path, future_int8_onnx_path, calib_method, calibration_loader, sample=100):
         self.sample = sample
         self.calibration_loader = calibration_loader
         _ = ort.quantization.quantize_static(
@@ -48,16 +55,18 @@ class OnnxStaticQuantization:
 # --------------------------------------------------------------------------------------
 # method=MinMax, calibration_number=1000
 # Perform the quantization
-val_dataset = timm.data.ImageDataset('dataset/COCO/coco2017/val2017')
-val_loader = timm.data.create_loader(val_dataset, (1,3,800,1200), 1)
+# val_dataset = timm.data.ImageDataset('dataset/COCO/coco2017/val2017')
+val_dataset = pmr.datasets(dataset, data_dir, "val2017", train=False)
+# val_loader = timm.data.create_loader(val_dataset, (1,3,800,1216), 1)
+val_loader = torch.utils.data.Subset(dataset, 1)
 module = OnnxStaticQuantization()
 module.fp32_onnx_path = "weight/mask_rcnn_simple_fp32.onnx"
-module.quantization(
+module.quantization1(
     fp32_onnx_path="weight/mask_rcnn_simple_fp32.onnx",
     future_int8_onnx_path="weight/mask_rcnn_simple_fp32_MinMax.onnx",
     calib_method="MinMax",
     calibration_loader=val_loader,
-    sample=1000   # calibration number
+    sample=1   # calibration number
 )
 
 print("Quantization Done...!")

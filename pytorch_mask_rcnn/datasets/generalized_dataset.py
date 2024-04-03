@@ -93,6 +93,7 @@ class Transformer:
         
         return batched_img[None]
 
+
     def postprocess(self, result, image_shape, ori_image_shape):
         box = result['boxes']
         # box[:, [0, 2]] = box[:, [0, 2]] * ori_image_shape[1] / image_shape[1]
@@ -111,7 +112,7 @@ class Transformer:
             bbox_height = bbox_height_percent / 100
             box[:, [1, 3]] = box[:, [1, 3]] + box[:, [1, 3]] * bbox_height
         else:
-            bbox_height = (image_shape.shape[-2] * 100) / ori_image_shape[0]
+            bbox_height_percent = (image_shape.shape[-2] * 100) / ori_image_shape[0]
             bbox_height = bbox_height_percent / 100
             box[:, [1, 3]] = box[:, [1, 3]] * bbox_height
         
@@ -121,7 +122,7 @@ class Transformer:
             mask = result['masks']
             mask = paste_masks_in_image(mask, box, 1, ori_image_shape)
             result['masks'] = mask
-            
+        
         return result
 
 
@@ -192,10 +193,8 @@ class GeneralizedDataset:
         image = transforms.ToTensor()(image)
         # target = self.get_target(img_id)["masks"]
         target = self.get_target(img_id)
+        image, target = self.transformer(image, target) 
         
-        image, target = self.transformer(image, target)   # error : RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got input of size: [1, 1, 3, 800, 1216]
-        
-        # -------------------------------------------------------------------------------
         return image, target   
     
     def __len__(self):

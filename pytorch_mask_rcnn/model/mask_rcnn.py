@@ -137,6 +137,7 @@ class MaskRCNN(nn.Module):
         
     def forward(self, image):
         ori_image_shape = image.shape[-2:]
+        
         # image, target = self.transformer(image, target)
         
         image_shape = image.shape[-2:]
@@ -146,8 +147,10 @@ class MaskRCNN(nn.Module):
         result, roi_losses = self.head(feature, proposal, image_shape)
         
         result = self.transformer.postprocess(result, image_shape, ori_image_shape)
-        print(result)
+        
         return result
+    
+
 
 class FastRCNNPredictor(nn.Module):
     def __init__(self, in_channels, mid_channels, num_classes):
@@ -263,4 +266,6 @@ def maskrcnn_resnet50(pretrained, num_classes, pretrained_backbone=True):
         model.load_state_dict(msd)
     
     return model
+
+
 

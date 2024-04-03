@@ -96,17 +96,6 @@ class RoIHeads(nn.Module):
         result, losses = {}, {}
         result = self.fastrcnn_inference(class_logit, box_regression, proposal, image_shape)
         if self.has_mask():
-            
-            '''
-            # -------------- critial ----------------
-            box_regression = box_regression[:num_pos].reshape(num_pos, -1, 4)
-            idx = torch.arange(num_pos, device=mask_label.device)
-            mask_proposal = self.box_coder.decode(box_regression[idx, mask_label], mask_proposal)
-            # ---------------------------------------
-            '''
-            if mask_proposal.shape[0] == 0:
-                losses.update(dict(roi_mask_loss=torch.tensor(0)))
-                return result, losses
         
             mask_proposal = result['boxes']
             
@@ -126,5 +115,6 @@ class RoIHeads(nn.Module):
         return result, losses
     
     
+
     
     
