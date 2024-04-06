@@ -171,13 +171,12 @@ for p in model.parameters():
 t_m = Meter("total")
 m_m = Meter("model")
 coco_results = []
-model.eval()
 
 A = time.time()
 
 # ==============================================================================================
 # Onnx Export 
-dummy_input_tensor = torch.randn(1, 3, 800, 1200)
+dummy_input_tensor = torch.randn(1, 3, 800, 1216)
 torch.set_default_dtype(torch.float16) # Enable FP16 mode
 
 torch.onnx.export(model.cpu(), 

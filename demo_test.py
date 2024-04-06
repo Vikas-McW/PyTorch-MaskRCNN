@@ -1,7 +1,6 @@
 
 import torch  # type: ignore
-import pytorch_mask_rcnn as pmr  # type: ignore
-# torch.set_printoptions(threshold=1000000000)  
+import pytorch_mask_rcnn as pmr  # type: ignore  
 
 
 use_cuda = True
@@ -15,8 +14,6 @@ if device.type == "cuda":
 print(f"\ndevice: {device}")
 
 ds = pmr.datasets(dataset, data_dir, "val2017", train=True)
-#indices = torch.randperm(len(ds)).tolist()
-#d = torch.utils.data.Subset(ds, indices)
 
 d = torch.utils.data.DataLoader(ds, shuffle=False)
 
@@ -34,12 +31,9 @@ image = image.to(device)[0]
 # print(target)
 #target = {k: v.to(device) for k, v in target.items()}
 
-# with torch.no_grad():
-result = model(image)
-print(result.keys())
-print(result)
 
-# pmr.show(image, result, ds.classes, "./image/output001.jpg")
+result = model(image)
+print(result)
 
 
 

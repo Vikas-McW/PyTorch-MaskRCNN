@@ -153,7 +153,7 @@ class Meter:
 
 ds = pmr.datasets(dataset, data_dir, "val2017", train=True)
 
-d = torch.utils.data.DataLoader(ds, shuffle=False)
+dl = torch.utils.data.DataLoader(ds, shuffle=False)
 
 model = pmr.maskrcnn_resnet50(True, max(ds.classes) + 1).to(device)
 model.eval()
@@ -172,7 +172,7 @@ A = time.time()
 
 # ==============================================================================================
 
-for i, (image, target) in enumerate(d): 
+for i, (image, target) in enumerate(dl): 
     T = time.time()
     
     image = image.to(device)
@@ -184,7 +184,7 @@ for i, (image, target) in enumerate(d):
     image = image.squeeze(0)
     print(image.shape)
     output = model(image)
-    # print(output)
+    print(output)
     
     m_m.update(time.time() - S)
 
@@ -194,7 +194,7 @@ for i, (image, target) in enumerate(d):
     t_m.update(time.time() - T)
 
     # --------------- added script -----------------
-    if (i >= 10):
+    if (i >= 1):
         break
     # ----------------------------------------------
 

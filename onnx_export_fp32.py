@@ -171,7 +171,6 @@ for p in model.parameters():
 t_m = Meter("total")
 m_m = Meter("model")
 coco_results = []
-model.eval()
 
 A = time.time()
 

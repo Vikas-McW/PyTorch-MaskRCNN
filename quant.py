@@ -48,17 +48,19 @@ class OnnxStaticQuantization:
                 activation_type=ort.quantization.QuantType.QInt16,
                 weight_type=ort.quantization.QuantType.QInt8,
                 calibrate_method=self.calibration_technique[calib_method],
+                per_channel=True,
+                reduce_range=True,
                 calibration_data_reader=self
             )
         return self
 
+
 # --------------------------------------------------------------------------------------
 # method=MinMax, calibration_number=1000
 # Perform the quantization
-# val_dataset = timm.data.ImageDataset('dataset/COCO/coco2017/val2017')
 val_dataset = pmr.datasets(dataset, data_dir, "val2017", train=False)
-# val_loader = timm.data.create_loader(val_dataset, (1,3,800,1216), 1)
 val_loader = torch.utils.data.Subset(dataset, 1)
+# val_loader = torch.utils.data.DataLoader(val_dataset, shuffle=False)
 module = OnnxStaticQuantization()
 module.fp32_onnx_path = "weight/mask_rcnn_simple_fp32.onnx"
 module.quantization1(

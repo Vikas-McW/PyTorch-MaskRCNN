@@ -15,13 +15,13 @@ class Transformer:
         self.max_size = max_size
         self.image_mean = image_mean
         self.image_std = image_std
-    
+
     def __call__(self, image, target):
         image = self.normalize(image)
         image, target = self.resize(image, target)
         image = self.batched_image(image)
         return image, target
-    
+
     def normalize(self, image):
         image=image.squeeze(0)
         if image.shape[0] == 1:
@@ -32,14 +32,14 @@ class Transformer:
         std = torch.tensor(self.image_std, dtype=dtype, device=device)
         image = (image - mean[:, None, None]) / std[:, None, None]
         return image
-    
+
     def resize(self, image, target):
         # ==================================== image resize =======================================
-        # print("Original size : ", image.shape) # new line added
+        # print("Original size : ", image.shape) # New Line Added
         ori_image_shape = image.shape[-2:]
         size = [800, 1200]
         image = F.interpolate(image[None], size=size, mode='bilinear', align_corners=False)[0]
-        # print("Resized size : ", image.shape) # new line added
+        # print("Resized size : ",  image.shape) # New Line Added
 
         if target is None:
             return image, target
@@ -53,25 +53,14 @@ class Transformer:
             actual image : ori_image_shape
             resize image : image.shape
         '''
-        box = target['boxes']
-        if (ori_image_shape[-1] < image.shape[1]): 
-            bbox_width_percent = 100 - ((image.shape[1] * 100) / ori_image_shape[-1])
-            bbox_width = bbox_width_percent / 100
-            box[:, [0, 2]] = box[:, [0, 2]] + (box[:, [0, 2]] * bbox_width)
-        else:
-            bbox_width_percent = (image.shape[1] * 100) / ori_image_shape[-1]
-            bbox_width = bbox_width_percent / 100
-            box[:, [0, 2]] = box[:, [0, 2]] * bbox_width
+        box = target['boxes']  # boxes: [245.0500, 185.2300, 410.8100, 541.2600]
         
+        bbox = image.shape[-1] / ori_image_shape[1]
+        box[:, [0, 2]] = torch.round(box[:, [0, 2]] * bbox)
         
-        if (ori_image_shape[0] < image.shape[-2]) : 
-            bbox_height_percent = 100 - ((image.shape[-2] * 100) / ori_image_shape[0])
-            bbox_height = bbox_height_percent / 100
-            box[:, [1, 3]] = box[:, [1, 3]] + box[:, [1, 3]] * bbox_height
-        else:
-            bbox_height = (image.shape[-2] * 100) / ori_image_shape[0]
-            bbox_height = bbox_height_percent / 100
-            box[:, [1, 3]] = box[:, [1, 3]] * bbox_height
+        bbox = image.shape[-2] / ori_image_shape[0]
+        box[:, [1, 3]] = torch.round(box[:, [1, 3]] * bbox)
+        
         target['boxes'] = box
         
 
@@ -82,8 +71,8 @@ class Transformer:
             target['masks'] = mask
         
         return image, target
-    
-    
+
+
     def batched_image(self, image, stride=32):
         size = image.shape[-2:]
         max_size = tuple(math.ceil(s / stride) * stride for s in size)
@@ -96,26 +85,8 @@ class Transformer:
 
     def postprocess(self, result, image_shape, ori_image_shape):
         box = result['boxes']
-        # box[:, [0, 2]] = box[:, [0, 2]] * ori_image_shape[1] / image_shape[1]
-        if (ori_image_shape[-1] < image_shape.shape[1]): 
-            bbox_width_percent = 100 - ((image_shape.shape[1] * 100) / ori_image_shape[-1])
-            bbox_width = bbox_width_percent / 100
-            box[:, [0, 2]] = box[:, [0, 2]] + (box[:, [0, 2]] * bbox_width)
-        else:
-            bbox_width_percent = (image_shape.shape[1] * 100) / ori_image_shape[-1]
-            bbox_width = bbox_width_percent / 100
-            box[:, [0, 2]] = box[:, [0, 2]] * bbox_width
-        
-        # box[:, [1, 3]] = box[:, [1, 3]] * ori_image_shape[0] / image_shape[0]
-        if (ori_image_shape[0] < image_shape.shape[-2]) : 
-            bbox_height_percent = 100 - ((image_shape.shape[-2] * 100) / ori_image_shape[0])
-            bbox_height = bbox_height_percent / 100
-            box[:, [1, 3]] = box[:, [1, 3]] + box[:, [1, 3]] * bbox_height
-        else:
-            bbox_height_percent = (image_shape.shape[-2] * 100) / ori_image_shape[0]
-            bbox_height = bbox_height_percent / 100
-            box[:, [1, 3]] = box[:, [1, 3]] * bbox_height
-        
+        box[:, [0, 2]] = box[:, [0, 2]] * ori_image_shape[1] / image_shape[1]
+        box[:, [1, 3]] = box[:, [1, 3]] * ori_image_shape[0] / image_shape[0]
         result['boxes'] = box
         
         if 'masks' in result:
@@ -165,7 +136,7 @@ def paste_masks_in_image(mask, box, padding, image_shape):
         x2 = min(b[2], image_shape[1])
         y2 = min(b[3], image_shape[0])
         
-        im[y1:y2, x1:x2] = m[(y1 - b[1]):(y2 - b[1]), (x1 - b[0]):(x2 - b[0])]
+        im[y1 : y2, x1 : x2] = m[(y1 - b[1]) : (y2 - b[1]), (x1 - b[0]) : (x2 - b[0])]
     return im_mask
 
 

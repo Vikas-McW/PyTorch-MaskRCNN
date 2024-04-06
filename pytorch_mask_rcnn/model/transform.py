@@ -15,28 +15,10 @@ class Transformer:
     def postprocess(self, result, image_shape, ori_image_shape):
         # update the bounding box
         box = result['boxes']
-        box[:, [0, 2]] = box[:, [0, 2]] * ori_image_shape[1] / image_shape[1]
-        # if (ori_image_shape[-1] < image_shape[1]): 
-        #     bbox_width_percent = 100 - ((image_shape[1] * 100) / ori_image_shape[-1])
-        #     bbox_width = bbox_width_percent / 100
-        #     box[:, [0, 2]] = box[:, [0, 2]] + (box[:, [0, 2]] * bbox_width)
-        # else:
-        #     bbox_width_percent = (image_shape[1] * 100) / ori_image_shape[-1]
-        #     bbox_width = bbox_width_percent / 100
-        #     box[:, [0, 2]] = box[:, [0, 2]] * bbox_width
-        
-        box[:, [1, 3]] = box[:, [1, 3]] * ori_image_shape[0] / image_shape[0]
-        # if (ori_image_shape[0] < image_shape[-2]) : 
-        #     bbox_height_percent = 100 - ((image_shape[-2] * 100) / ori_image_shape[0])
-        #     bbox_height = bbox_height_percent / 100
-        #     box[:, [1, 3]] = box[:, [1, 3]] + box[:, [1, 3]] * bbox_height
-        # else:
-        #     bbox_height_percent = (image_shape[-2] * 100) / ori_image_shape[0]
-        #     bbox_height = bbox_height_percent / 100
-        #     box[:, [1, 3]] = box[:, [1, 3]] * bbox_height
+        box[:, [0, 2]] = torch.round(box[:, [0, 2]] * (ori_image_shape[1] / image_shape[1]))
+        box[:, [1, 3]] = torch.round(box[:, [1, 3]] * (ori_image_shape[0] / image_shape[0]))
         
         result['boxes'] = box
-        
         
         # Update the masks
         if 'masks' in result:
